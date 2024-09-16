@@ -1,49 +1,61 @@
 #include "ObstacleDetection.h"
 #include "MotorControl.h"
+#include "ServoControl.h"
 #include <Arduino.h>
 #include <NewPing.h>
 
+extern ServoControl servoControl;
+extern MotorControl motorControl;
+
 #define TRIGGER_PIN 2
 #define ECHO_PIN 1
-#define MAX_DISTANCE 200 // Set maximum distance for ping (in cm)
+#define MAX_DISTANCE 200  // Max distance for obstacle detection
 
-extern MotorControl motorControl;
-extern bool obstacleDetected;
 
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // Initialize NewPing with trigger, echo, and max distance
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 void ObstacleDetection::setup() {
-    // No need for pinMode as NewPing handles it internally
+    Serial.begin(9600);
+    servoControl.setup();
 }
 
 unsigned int ObstacleDetection::getDistance() {
     delay(70);
-    unsigned int distance = sonar.ping_cm(); // Get distance in cm using NewPing
-    return distance == 0 ? MAX_DISTANCE : distance; // If no ping detected, return max distance
+    unsigned int distance = sonar.ping_cm();
+    return distance == 0 ? MAX_DISTANCE : distance;
 }
 
 bool ObstacleDetection::detectObstacle() {
     unsigned int distance = getDistance();
-    Serial.print("Distance: ");
-    Serial.println(distance);
-    if (distance < 15) { // Threshold for detecting obstacles
-        obstacleDetected = true;
+    if (distance < 15) {
         Serial.println("Obstacle detected! Changing direction.");
-        autonomousChangeDirection(); // Autonomous direction change logic
+        autonomousChangeDirection();
         return true;
     }
-    obstacleDetected = false;
     return false;
 }
 
 void ObstacleDetection::autonomousChangeDirection() {
-    Serial.println("Autonomous direction change logic...");
+    motorControl.stopAll();
+    
+    bool clearLeft = scanWithServo(0);
+    bool clearCenter = scanWithServo(90);
+    bool clearRight = scanWithServo(180);
 
-    // motorControl.moveBackward(200); // Move backward slightly
-    // delay(500);
-    // motorControl.turnLeft(150); // Turn left to avoid obstacle
-    // delay(500);
-    // motorControl.moveForward(200); // Move forward after avoiding
-    // delay(500);
+    if (clearLeft) {
+        motorControl.turnFrontMotor(true, MAX_FRONT_MOTOR_SPEED);  // Now it's recognized
+    } else if (clearCenter) {
+        motorControl.move(true, MAX_BACK_MOTOR_SPEED);  // Now it's recognized
+    } else if (clearRight) {
+        motorControl.turnFrontMotor(false, MAX_FRONT_MOTOR_SPEED);  // Now it's recognized
+    } else {
+        motorControl.stopAll();
+    }
 }
 
+bool ObstacleDetection::scanWithServo(int angle) {
+    servoControl.moveServo(angle);
+    delay(500);
+    unsigned int distance = getDistance();
+    return distance > 20;  // Return true if the path is clear
+}

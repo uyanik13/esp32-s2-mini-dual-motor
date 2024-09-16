@@ -8,12 +8,11 @@
 #define MOVE_DELAY 15  // Short delay between angle steps for smooth movement
 #define STEP_SIZE 1     // How much the servo moves per step
 
-Servo servo;
+ServoControl::ServoControl() {}
 
 void ServoControl::setup() {
     servo.attach(SERVO_PIN);
     servo.write(CENTER_ANGLE); // Center position
-    Serial.begin(9600);
     Serial.println("Servo initialized at center position.");
 }
 

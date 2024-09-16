@@ -12,13 +12,13 @@
 #define MOTOR_STBY 15
 
 // PWM configuration
-#define PWM_FREQUENCY 5000
+#define PWM_FREQUENCY 20000
 #define PWM_RESOLUTION 8
 #define PWM_CHANNEL_BACK_MOTOR 0
 #define PWM_CHANNEL_FRONT_MOTOR 1
 #define MAX_BACK_MOTOR_SPEED 145
 #define MAX_FRONT_MOTOR_SPEED 150
-#define TURN_REDUCTION_FACTOR 0.7  // Reduce turning speed for smoother turns
+#define TURN_REDUCTION_FACTOR 1  // Reduce turning speed for smoother turns
 
 // Motor control flags
 #define ENABLE_FRONT_MOTOR true  // Set to false to disable the front motor
@@ -26,22 +26,16 @@
 
 #define TURN_DURATION 1000  // Motor turning duration
 
-MotorControl::MotorControl()
-    : currentSpeed(0), lastSpeed(0), softStartDelay(50), lastMotorCommandTime(0), frontMotorActive(false), backMotorActive(false), motorTurning(false), lastTurnTime(0), lastTurnDirection("") {}
+MotorControl::MotorControl() {}
 
-// Setup the motor control pins
 void MotorControl::setup() {
     Serial.println("MotorControl: Initializing motor control pins...");
-
-    // Setup motor control pins
     setupPins();
     setupPWM();
-
     Serial.println("MotorControl: Pin setup complete.");
     checkMotorStatus();
 }
 
-// Setup the control pins
 void MotorControl::setupPins() {
     pinMode(FRONT_MOTOR_IN1, OUTPUT);
     pinMode(FRONT_MOTOR_IN2, OUTPUT);
@@ -268,3 +262,7 @@ int MotorControl::whichMotorRuns(const String& direction) {
     }
 }
 
+//Get the last direction
+String MotorControl::getLastDirection() {
+    return lastDirection;
+}

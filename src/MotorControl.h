@@ -1,41 +1,47 @@
-#ifndef MOTOR_CONTROL_H
-#define MOTOR_CONTROL_H
+#ifndef MOTORCONTROL_H
+#define MOTORCONTROL_H
 
-#include <Arduino.h>
+#include <Arduino.h>  // Include Arduino for String
+
+#define MAX_FRONT_MOTOR_SPEED 150  // Define these constants as required
+#define MAX_BACK_MOTOR_SPEED 145
 
 class MotorControl {
 public:
     MotorControl();
-    void setup();  
-    void setupPins();  
-    void handleWebSocketInput(const String& direction, int speed, float angle);
+    void setup();
+    void handleWebSocketInput(const String& direction, int speed, float angle);  
     void processMotorControl(const String& direction, int backMotorSpeed, int frontMotorSpeed, float angle);
-    void setMotorStandby(bool standby);  
-    void stopAll();  
-    void setFrontMotorDirection(int dir1, int dir2);  // Corrected method name
-    void setBackMotorDirection(int dir1, int dir2);   // Corrected method name
-    void setFrontMotorSpeed(int speed);               // Corrected method name
-    void setBackMotorSpeed(int speed);                // Corrected method name
+    void stopAll();
     void move(bool forward, int speed);
+    String getLastDirection();
+
+    // Make this method public so ObstacleDetection can call it
     void turnFrontMotor(bool left, int speed);  
-    void validateDirectionAndAngle(const String& direction, float angle); 
-    void stopFrontMotor();  
-    void adjustFrontMotorByJoystick(int speed, float angle);  
-    void setupPWM();  
-    void checkMotorStatus();  
-    int whichMotorRuns(const String& direction);
 
 private:
-    int currentSpeed;  
-    int softStartDelay;
-    unsigned long lastMotorCommandTime;
+    void setupPins();
+    void setupPWM();
+    void checkMotorStatus();
+    void stopFrontMotor();
+    void setFrontMotorSpeed(int speed);
+    void setBackMotorSpeed(int speed);
+    void setFrontMotorDirection(int dir1, int dir2);
+    void setBackMotorDirection(int dir1, int dir2);
+    void setMotorStandby(bool standby);
+    int whichMotorRuns(const String& direction);
+
+    // Variables to store motor states
     bool frontMotorActive;
     bool backMotorActive;
+    String lastDirection;
     bool motorTurning;
     unsigned long lastTurnTime;
-    String lastTurnDirection;
-    String lastDirection;
+    unsigned long lastMotorCommandTime;
+    int currentSpeed;
     int lastSpeed;
+    int softStartDelay;
+    String lastTurnDirection;
 };
 
-#endif // MOTOR_CONTROL_H
+#endif

@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <LittleFS.h>
+#include <Arduino.h>
 #include "MotorControl.h"
 #include "ServoControl.h"
 #include "ObstacleDetection.h"
@@ -7,7 +8,7 @@
 
 // Global Instances
 MotorControl motorControl;
-ServoControl servoControl;
+ServoControl servoControl; 
 ObstacleDetection obstacleDetection;
 WebSocketHandler webSocketHandler;
 
@@ -81,9 +82,9 @@ void setup() {
 
     // Setup motor, servo, and obstacle detection
     motorControl.setup();
-    servoControl.setup();
-    servoControl.center();
-    obstacleDetection.setup();
+    // servoControl.setup();
+    // servoControl.center();
+    // obstacleDetection.setup();
 
     // Setup the server
     setupServer();
@@ -96,7 +97,7 @@ void loop() {
     
 
     // Continuously check for obstacles
-    obstacleDetection.detectObstacle();
+    // obstacleDetection.detectObstacle();
     // servoControl.moveLeft();
     // delay(1000); // Wait for a second
 
