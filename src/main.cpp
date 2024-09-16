@@ -81,8 +81,9 @@ void setup() {
 
     // Setup motor, servo, and obstacle detection
     motorControl.setup();
-    // servoControl.setup();
-    // obstacleDetection.setup();
+    servoControl.setup();
+    servoControl.center();
+    obstacleDetection.setup();
 
     // Setup the server
     setupServer();
@@ -95,5 +96,15 @@ void loop() {
     
 
     // Continuously check for obstacles
-    // obstacleDetection.detectObstacle();
+    obstacleDetection.detectObstacle();
+    // servoControl.moveLeft();
+    // delay(1000); // Wait for a second
+
+    // // Test moving servo right
+    // servoControl.moveRight();
+    // delay(1000); // Wait for a second
+
+    // // Test moving servo back to center
+    // servoControl.center();
+    // delay(1000); // Wait for a second
 }

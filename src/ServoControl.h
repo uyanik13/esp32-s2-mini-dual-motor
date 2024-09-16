@@ -7,6 +7,9 @@ class ServoControl {
 public:
     void setup();
     void moveServo(int angle);
+    void moveLeft();
+    void moveRight();
+    void center();
 };
 
 #endif

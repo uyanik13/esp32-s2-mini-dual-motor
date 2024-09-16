@@ -1,36 +1,34 @@
 #include "ObstacleDetection.h"
 #include "MotorControl.h"
 #include <Arduino.h>
+#include <NewPing.h>
 
 #define TRIGGER_PIN 2
 #define ECHO_PIN 1
+#define MAX_DISTANCE 200 // Set maximum distance for ping (in cm)
 
 extern MotorControl motorControl;
 extern bool obstacleDetected;
 
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // Initialize NewPing with trigger, echo, and max distance
+
 void ObstacleDetection::setup() {
-    pinMode(TRIGGER_PIN, OUTPUT);
-    pinMode(ECHO_PIN, INPUT);
+    // No need for pinMode as NewPing handles it internally
 }
 
 unsigned int ObstacleDetection::getDistance() {
-    digitalWrite(TRIGGER_PIN, LOW);
-    delayMicroseconds(2);
-    digitalWrite(TRIGGER_PIN, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(TRIGGER_PIN, LOW);
-
-    unsigned long duration = pulseIn(ECHO_PIN, HIGH);
-    unsigned int distance = duration * 0.034 / 2;
-    return distance;
+    delay(70);
+    unsigned int distance = sonar.ping_cm(); // Get distance in cm using NewPing
+    return distance == 0 ? MAX_DISTANCE : distance; // If no ping detected, return max distance
 }
 
 bool ObstacleDetection::detectObstacle() {
     unsigned int distance = getDistance();
-    if (distance < 10) {
+    Serial.print("Distance: ");
+    Serial.println(distance);
+    if (distance < 15) { // Threshold for detecting obstacles
         obstacleDetected = true;
         Serial.println("Obstacle detected! Changing direction.");
-        motorControl.stopAll();
         autonomousChangeDirection(); // Autonomous direction change logic
         return true;
     }
@@ -39,6 +37,8 @@ bool ObstacleDetection::detectObstacle() {
 }
 
 void ObstacleDetection::autonomousChangeDirection() {
+    Serial.println("Autonomous direction change logic...");
+
     // motorControl.moveBackward(200); // Move backward slightly
     // delay(500);
     // motorControl.turnLeft(150); // Turn left to avoid obstacle
@@ -46,3 +46,4 @@ void ObstacleDetection::autonomousChangeDirection() {
     // motorControl.moveForward(200); // Move forward after avoiding
     // delay(500);
 }
+

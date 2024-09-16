@@ -2,14 +2,14 @@
 #include <Arduino.h>
 
 // Motor control pins
-#define FRONT_MOTOR_IN1 21
-#define FRONT_MOTOR_IN2 17
+#define FRONT_MOTOR_IN1 17
+#define FRONT_MOTOR_IN2 21
 #define BACK_MOTOR_IN1 18
 #define BACK_MOTOR_IN2 33
-#define FRONT_MOTOR_ENABLE 15
+#define FRONT_MOTOR_ENABLE 34
 #define BACK_MOTOR_ENABLE 16
 // Standby pin
-#define MOTOR_STBY 34
+#define MOTOR_STBY 15
 
 // PWM configuration
 #define PWM_FREQUENCY 5000
@@ -17,7 +17,7 @@
 #define PWM_CHANNEL_BACK_MOTOR 0
 #define PWM_CHANNEL_FRONT_MOTOR 1
 #define MAX_BACK_MOTOR_SPEED 145
-#define MAX_FRONT_MOTOR_SPEED 50
+#define MAX_FRONT_MOTOR_SPEED 150
 #define TURN_REDUCTION_FACTOR 0.7  // Reduce turning speed for smoother turns
 
 // Motor control flags
