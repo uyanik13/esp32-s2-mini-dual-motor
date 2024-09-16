@@ -82,8 +82,8 @@ void setup() {
 
     // Setup motor, servo, and obstacle detection
     motorControl.setup();
-    // servoControl.setup();
-    // servoControl.center();
+    servoControl.setup();
+    servoControl.center();
     // obstacleDetection.setup();
 
     // Setup the server

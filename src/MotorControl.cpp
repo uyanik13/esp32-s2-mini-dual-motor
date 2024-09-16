@@ -2,17 +2,17 @@
 #include <Arduino.h>
 
 // Motor control pins
-#define FRONT_MOTOR_IN1 17
-#define FRONT_MOTOR_IN2 21
-#define BACK_MOTOR_IN1 18
-#define BACK_MOTOR_IN2 33
+#define FRONT_MOTOR_IN1 21
+#define FRONT_MOTOR_IN2 17
+#define BACK_MOTOR_IN1 33
+#define BACK_MOTOR_IN2 18
 #define FRONT_MOTOR_ENABLE 34
 #define BACK_MOTOR_ENABLE 16
 // Standby pin
 #define MOTOR_STBY 15
 
 // PWM configuration
-#define PWM_FREQUENCY 20000
+#define PWM_FREQUENCY 5000
 #define PWM_RESOLUTION 8
 #define PWM_CHANNEL_BACK_MOTOR 0
 #define PWM_CHANNEL_FRONT_MOTOR 1
@@ -66,12 +66,9 @@ void MotorControl::handleWebSocketInput(const String& direction, int speed, floa
 
     // Validation based on which motor(s) should run
     if (motorOperation == PWM_CHANNEL_BACK_MOTOR && speed > MAX_BACK_MOTOR_SPEED) {
-        //reduce speed to max speed
-        Serial.println("Speed exceeds maximum limit for back motor. Reducing speed.");
-        mappedBackMotorSpeed = MAX_BACK_MOTOR_SPEED;
-    } 
-    if (motorOperation == PWM_CHANNEL_FRONT_MOTOR && (speed > MAX_BACK_MOTOR_SPEED || speed > MAX_FRONT_MOTOR_SPEED)) {
-        //reduce speed to max speed
+         Serial.println("Speed exceeds maximum limit for back motor. Reducing speed.");
+         mappedBackMotorSpeed = MAX_BACK_MOTOR_SPEED;
+    } else if (motorOperation == PWM_CHANNEL_FRONT_MOTOR && speed > MAX_FRONT_MOTOR_SPEED) {
         Serial.println("Speed exceeds maximum limit for front motor. Reducing speed.");
         mappedFrontMotorSpeed = MAX_FRONT_MOTOR_SPEED;
     }
@@ -149,7 +146,7 @@ void MotorControl::stopAll() {
     setBackMotorSpeed(0);
     frontMotorActive = false;
     backMotorActive = false;
-    setMotorStandby(true);
+    setMotorStandby(true); 
     checkMotorStatus();
 }
 
