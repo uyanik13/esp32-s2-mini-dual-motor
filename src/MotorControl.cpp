@@ -16,8 +16,6 @@
 #define PWM_RESOLUTION 8
 #define PWM_CHANNEL_BACK_MOTOR 0
 #define PWM_CHANNEL_FRONT_MOTOR 1
-#define MAX_BACK_MOTOR_SPEED 145
-#define MAX_FRONT_MOTOR_SPEED 150
 #define TURN_REDUCTION_FACTOR 1  // Reduce turning speed for smoother turns
 
 // Motor control flags

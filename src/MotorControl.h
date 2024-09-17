@@ -3,8 +3,8 @@
 
 #include <Arduino.h>  // Include Arduino for String
 
-#define MAX_FRONT_MOTOR_SPEED 150  // Define these constants as required
-#define MAX_BACK_MOTOR_SPEED 145
+#define MAX_BACK_MOTOR_SPEED 128
+#define MAX_FRONT_MOTOR_SPEED 120
 
 class MotorControl {
 public:
