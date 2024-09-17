@@ -14,8 +14,8 @@
 // PWM configuration
 #define PWM_FREQUENCY 5000
 #define PWM_RESOLUTION 8
-#define PWM_CHANNEL_BACK_MOTOR 0
-#define PWM_CHANNEL_FRONT_MOTOR 1
+#define PWM_CHANNEL_BACK_MOTOR 3
+#define PWM_CHANNEL_FRONT_MOTOR 4
 #define TURN_REDUCTION_FACTOR 1  // Reduce turning speed for smoother turns
 
 // Motor control flags
