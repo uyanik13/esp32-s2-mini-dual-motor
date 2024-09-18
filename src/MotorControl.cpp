@@ -48,9 +48,18 @@ void MotorControl::setupPins() {
 void MotorControl::handleWebSocketInput(const String& direction, int speed, float angle) {
     Serial.printf("Handling WebSocket input - Direction: %s, Speed: %d, Angle: %.1f\n", direction.c_str(), speed, angle);
 
-    // Validation: Ensure speed is between 0 and 100, and angle is between 0 and 360 and direction is valid
-    if (angle < 0 || angle >= 360 || direction == "C") {
-        Serial.println("Invalid input data. Stopping motors.");
+    // Eğer hız 0 ise motorları durdur
+    if (speed == 0 || direction == "C") {
+        stopAll();  // Hız 0 veya "C" yönünde motorları hemen durdur
+        return;
+    }
+
+    // Hız maksimum sınırı aşarsa hızı sınırlayalım
+    speed = constrain(speed, 0, 100); // Hızı 0 ile 100 arasında tut
+
+    // Validation: Ensure angle is between 0 and 360
+    if (angle < 0 || angle >= 360) {
+        Serial.println("Invalid angle. Stopping motors.");
         stopAll();
         return;
     }
@@ -63,10 +72,10 @@ void MotorControl::handleWebSocketInput(const String& direction, int speed, floa
     int mappedFrontMotorSpeed = map(constrain(speed, 0, 100), 0, 100, 0, MAX_FRONT_MOTOR_SPEED);
 
     // Validation based on which motor(s) should run
-    if (motorOperation == PWM_CHANNEL_BACK_MOTOR && speed > MAX_BACK_MOTOR_SPEED) {
+    if (motorOperation == PWM_CHANNEL_BACK_MOTOR && mappedBackMotorSpeed > MAX_BACK_MOTOR_SPEED) {
          Serial.println("Speed exceeds maximum limit for back motor. Reducing speed.");
          mappedBackMotorSpeed = MAX_BACK_MOTOR_SPEED;
-    } else if (motorOperation == PWM_CHANNEL_FRONT_MOTOR && speed > MAX_FRONT_MOTOR_SPEED) {
+    } else if (motorOperation == PWM_CHANNEL_FRONT_MOTOR && mappedFrontMotorSpeed > MAX_FRONT_MOTOR_SPEED) {
         Serial.println("Speed exceeds maximum limit for front motor. Reducing speed.");
         mappedFrontMotorSpeed = MAX_FRONT_MOTOR_SPEED;
     }
@@ -75,36 +84,39 @@ void MotorControl::handleWebSocketInput(const String& direction, int speed, floa
     processMotorControl(direction, mappedBackMotorSpeed, mappedFrontMotorSpeed, angle);
 }
 
-
 void MotorControl::processMotorControl(const String& direction, int backMotorSpeed, int frontMotorSpeed, float angle) {
+    // Hız aşımını engelle
+    backMotorSpeed = constrain(backMotorSpeed, 0, MAX_BACK_MOTOR_SPEED);
+    frontMotorSpeed = constrain(frontMotorSpeed, 0, MAX_FRONT_MOTOR_SPEED);
+
+    // Hız sıfırsa tüm motorları durdur
+    if (backMotorSpeed == 0 && frontMotorSpeed == 0) {
+        stopAll();
+        return;
+    }
+
     // Update the last direction to track the current movement
     lastDirection = direction;
 
     // Process motor control based on the validated direction, speed, and angle
     if (direction == "N") {
-        move(true, backMotorSpeed);  // Move forward
+        move(true, backMotorSpeed);  // Move forward with fine-tuned speed
         stopFrontMotor();
     } else if (direction == "S") {
-        move(false, backMotorSpeed);  // Move backward
+        int reducedBackMotorSpeed = backMotorSpeed / 2;
+        move(false, reducedBackMotorSpeed);  // Move backward with reduced speed
         stopFrontMotor();
-    } else if (direction == "NE") {
+    } else if (direction == "NE" || direction == "NW") {
         move(true, backMotorSpeed);
-        turnFrontMotor(false, frontMotorSpeed * TURN_REDUCTION_FACTOR);  // Turn front motor right
-    } else if (direction == "NW") {
-        move(true, backMotorSpeed);
-        turnFrontMotor(true, frontMotorSpeed * TURN_REDUCTION_FACTOR);  // Turn front motor left
-    } else if (direction == "SE") {
-        move(false, backMotorSpeed);
-        turnFrontMotor(false, frontMotorSpeed * TURN_REDUCTION_FACTOR);  // Turn front motor right
-    } else if (direction == "SW") {
-        move(false, backMotorSpeed);
-        turnFrontMotor(true, frontMotorSpeed * TURN_REDUCTION_FACTOR);  // Turn front motor left
+        turnFrontMotor(direction == "NE" ? false : true, frontMotorSpeed * TURN_REDUCTION_FACTOR);  // Turn front motor based on direction
+    } else if (direction == "SE" || direction == "SW") {
+        int reducedBackMotorSpeed = backMotorSpeed / 2;
+        move(false, reducedBackMotorSpeed);
+        turnFrontMotor(direction == "SE" ? false : true, frontMotorSpeed * TURN_REDUCTION_FACTOR);  // Turn front motor based on direction
     } else if (direction == "E") {
-        // For "E", move forward and turn sharply right
         move(true, backMotorSpeed);
         turnFrontMotor(false, frontMotorSpeed);
     } else if (direction == "W") {
-        // For "W", move forward and turn sharply left
         move(true, backMotorSpeed);
         turnFrontMotor(true, frontMotorSpeed);
     } else {
@@ -112,6 +124,7 @@ void MotorControl::processMotorControl(const String& direction, int backMotorSpe
         stopAll();
     }
 }
+
 
 // Turn left or right (only for the front motor)
 void MotorControl::turnFrontMotor(bool left, int speed) {
@@ -187,12 +200,36 @@ void MotorControl::setBackMotorSpeed(int speed) {
 }
 
 // Move forward or backward
-void MotorControl::move(bool forward, int speed) {
+void MotorControl::move(bool forward, int targetSpeed) {
     int dir1 = forward ? HIGH : LOW;
     int dir2 = forward ? LOW : HIGH;
+
+    // Set the motor direction immediately
     setBackMotorDirection(dir1, dir2);
-    setBackMotorSpeed(speed);
+
+    // Smoothly increase or decrease speed towards targetSpeed
+    int speedIncrement = 5;  // Fine-tuning için hız artış/azalış miktarı
+    int currentSpeed = lastSpeed;
+
+    // Hızlandırma veya yavaşlatma
+    if (currentSpeed < targetSpeed) {
+        currentSpeed = min(currentSpeed + speedIncrement, targetSpeed);  // Hız artırma
+    } else if (currentSpeed > targetSpeed) {
+        currentSpeed = max(currentSpeed - speedIncrement, targetSpeed);  // Hız azaltma
+    }
+
+    // Apply the speed to the motor
+    setBackMotorSpeed(currentSpeed);
+
+    // Update the last speed to track the current state
+    lastSpeed = currentSpeed;
+
+    // Durma kontrolü: Eğer hedef hız 0 ise motoru durdur
+    if (targetSpeed == 0) {
+        stopAll();
+    }
 }
+
 
 // Stop the front motor
 void MotorControl::stopFrontMotor() {
