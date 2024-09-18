@@ -1,18 +1,17 @@
 #ifndef OBSTACLEDETECTION_H
 #define OBSTACLEDETECTION_H
 
-#include <Arduino.h> 
-
 class ObstacleDetection {
 public:
+    ObstacleDetection();
     void setup();
+    unsigned int getDistance();
     bool detectObstacle();
     void autonomousChangeDirection();
 
 private:
-    unsigned int getDistance();
     bool scanWithServo(int angle);
-    bool scanLastDirection(String lastDirection);  // Now String will be recognized
+    int lastScanDirection = 90;  // Start with center as default
 };
 
 #endif

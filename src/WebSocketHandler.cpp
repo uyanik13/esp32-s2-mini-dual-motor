@@ -50,7 +50,7 @@ void WebSocketHandler::serializeAndSendToMotorControl(String msg) {
     float angle = doc["angle"];
 
     // Log the parsed data
-    Serial.printf("Serialized data - Direction: %s, Speed: %d, Angle: %.1f\n", direction, speed, angle);
+    // Serial.printf("Serialized data - Direction: %s, Speed: %d, Angle: %.1f\n", direction, speed, angle);
 
     // Send the data to MotorControl
     motorControl.handleWebSocketInput(String(direction), speed, angle);

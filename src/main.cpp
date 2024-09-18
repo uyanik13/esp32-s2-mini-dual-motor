@@ -84,7 +84,7 @@ void setup() {
     motorControl.setup();
     servoControl.setup();
     servoControl.center();
-    // obstacleDetection.setup();
+    obstacleDetection.setup();
 
     // Setup the server
     setupServer();
@@ -94,5 +94,5 @@ void setup() {
 void loop() {
     // Handle WebSocket communication
     webSocketHandler.cleanupClients();
-    // obstacleDetection.detectObstacle();
+    obstacleDetection.detectObstacle();
 }

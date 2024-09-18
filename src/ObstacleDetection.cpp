@@ -11,8 +11,9 @@ extern MotorControl motorControl;
 #define ECHO_PIN 1
 #define MAX_DISTANCE 200  // Max distance for obstacle detection
 
-
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+
+ObstacleDetection::ObstacleDetection() {}
 
 void ObstacleDetection::setup() {
     Serial.begin(9600);
@@ -28,34 +29,63 @@ unsigned int ObstacleDetection::getDistance() {
 bool ObstacleDetection::detectObstacle() {
     unsigned int distance = getDistance();
     if (distance < 15) {
-        Serial.println("Obstacle detected! Changing direction.");
-        autonomousChangeDirection();
+        Serial.println("Obstacle detected! Stopping all motors and scanning for alternatives.");
+        motorControl.stopAll();  // Stop all motors when an obstacle is detected
+        autonomousChangeDirection();  // Scan for alternative paths
         return true;
     }
     return false;
 }
 
 void ObstacleDetection::autonomousChangeDirection() {
-    motorControl.stopAll();
-    
-    bool clearLeft = scanWithServo(0);
-    bool clearCenter = scanWithServo(90);
-    bool clearRight = scanWithServo(180);
+    servoControl.attachServo();  // Attach the servo before scanning
 
-    if (clearLeft) {
-        motorControl.turnFrontMotor(true, MAX_FRONT_MOTOR_SPEED);  // Now it's recognized
-    } else if (clearCenter) {
-        motorControl.move(true, MAX_BACK_MOTOR_SPEED);  // Now it's recognized
-    } else if (clearRight) {
-        motorControl.turnFrontMotor(false, MAX_FRONT_MOTOR_SPEED);  // Now it's recognized
-    } else {
-        motorControl.stopAll();
+    // Alternate between scanning left and right based on last direction
+    if (lastScanDirection == 90 || lastScanDirection == 180) {
+        // First, scan left
+        if (scanWithServo(0)) {  // Scan left
+            Serial.println("Clear path found on the left. Returning to center and allowing manual control.");
+            lastScanDirection = 0;  // Update the last direction scanned
+            servoControl.center();  // Move servo back to center position
+            delay(500);  // Wait for the servo to reach the center
+
+            servoControl.stopServo();  // Stop servo after scanning
+            return;  // Exit if left is clear
+        }
     }
+
+    // Next, scan right
+    if (lastScanDirection == 0 || lastScanDirection == 90) {
+        if (scanWithServo(180)) {  // Scan right
+            Serial.println("Clear path found on the right. Returning to center and allowing manual control.");
+            lastScanDirection = 180;  // Update the last direction scanned
+            servoControl.center();  // Move servo back to center position
+            delay(500);  // Wait for the servo to reach the center
+
+            servoControl.stopServo();  // Stop servo after scanning
+            return;  // Exit if right is clear
+        }
+    }
+
+    // Lastly, scan center if no side is clear
+    if (scanWithServo(90)) {  // Scan center
+        Serial.println("Clear path found in the center. Stopping servo and allowing manual control.");
+        lastScanDirection = 90;  // Update the last direction scanned
+        delay(500);  // Wait for the servo to stabilize
+        servoControl.stopServo();  // Stop servo after scanning
+        return;  // Exit if center is clear
+    }
+
+    // If no clear path is found
+    Serial.println("No clear path found. Waiting for user command.");
+    motorControl.stopAll();  // Keep the motors stopped if no clear path is found
+    servoControl.stopServo();  // Stop the servo even if no path is clear
 }
 
 bool ObstacleDetection::scanWithServo(int angle) {
-    servoControl.moveServo(angle);
-    delay(500);
+    servoControl.moveServo(angle);  // Move the servo to the specified angle
+    delay(500);  // Wait for the servo to reach the position
     unsigned int distance = getDistance();
-    return distance > 20;  // Return true if the path is clear
+    Serial.printf("Distance at angle %d: %d cm\n", angle, distance);
+    return distance > 30;  // Return true if the path is clear (distance > 15cm)
 }

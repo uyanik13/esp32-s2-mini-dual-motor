@@ -46,7 +46,7 @@ void MotorControl::setupPins() {
 
 // Process WebSocket Input
 void MotorControl::handleWebSocketInput(const String& direction, int speed, float angle) {
-    Serial.printf("Handling WebSocket input - Direction: %s, Speed: %d, Angle: %.1f\n", direction.c_str(), speed, angle);
+    // Serial.printf("Handling WebSocket input - Direction: %s, Speed: %d, Angle: %.1f\n", direction.c_str(), speed, angle);
 
     // Eğer hız 0 ise motorları durdur
     if (speed == 0 || direction == "C") {
@@ -269,16 +269,16 @@ void MotorControl::setupPWM() {
 
 // Check the current status of the motors
 void MotorControl::checkMotorStatus() {
-    if (ENABLE_FRONT_MOTOR) {
-        Serial.printf("FRONT_MOTOR_IN1: %d, FRONT_MOTOR_IN2: %d\n", digitalRead(FRONT_MOTOR_IN1), digitalRead(FRONT_MOTOR_IN2));
-    }
-    if (ENABLE_BACK_MOTOR) {
-        Serial.printf("BACK_MOTOR_IN1: %d, BACK_MOTOR_IN2: %d\n", digitalRead(BACK_MOTOR_IN1), digitalRead(BACK_MOTOR_IN2));
-    }
+    // if (ENABLE_FRONT_MOTOR) {
+    //     Serial.printf("FRONT_MOTOR_IN1: %d, FRONT_MOTOR_IN2: %d\n", digitalRead(FRONT_MOTOR_IN1), digitalRead(FRONT_MOTOR_IN2));
+    // }
+    // if (ENABLE_BACK_MOTOR) {
+    //     Serial.printf("BACK_MOTOR_IN1: %d, BACK_MOTOR_IN2: %d\n", digitalRead(BACK_MOTOR_IN1), digitalRead(BACK_MOTOR_IN2));
+    // }
 
     int backMotorPWM = ledcRead(PWM_CHANNEL_BACK_MOTOR);
     int frontMotorPWM = ledcRead(PWM_CHANNEL_FRONT_MOTOR);
-    Serial.printf("Back Motor PWM: %d, Front Motor PWM: %d\n", backMotorPWM, frontMotorPWM);
+    // Serial.printf("Back Motor PWM: %d, Front Motor PWM: %d\n", backMotorPWM, frontMotorPWM);
 }
 
 // Set the motor standby mode
