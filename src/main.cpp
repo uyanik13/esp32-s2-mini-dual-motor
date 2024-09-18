@@ -94,18 +94,5 @@ void setup() {
 void loop() {
     // Handle WebSocket communication
     webSocketHandler.cleanupClients();
-    
-
-    // Continuously check for obstacles
     // obstacleDetection.detectObstacle();
-    // servoControl.moveLeft();
-    // delay(1000); // Wait for a second
-
-    // // Test moving servo right
-    // servoControl.moveRight();
-    // delay(1000); // Wait for a second
-
-    // // Test moving servo back to center
-    // servoControl.center();
-    // delay(1000); // Wait for a second
 }
